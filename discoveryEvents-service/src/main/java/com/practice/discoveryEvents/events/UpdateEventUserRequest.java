@@ -1,0 +1,54 @@
+package com.practice.discoveryEvents.events;
+
+
+import com.practice.discoveryEvents.categories.CategoryDTO;
+import com.practice.discoveryEvents.util.Location;
+import com.practice.discoveryEvents.util.LocationDTO;
+import com.practice.discoveryEvents.util.StateActionUser;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Valid
+public class UpdateEventUserRequest {
+
+    @Size(min = 20, max = 2000, message = "Annotation must be between 20 and 2000 characters")
+    String annotation;
+
+    @Positive(message = "Category ID is must be a positive number")
+    Integer categoryId;
+
+    @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters")
+    String description;
+
+    @Future(message = "Event date should be in the future")
+    LocalDateTime eventDate;
+
+    LocationDTO location;
+    Boolean paid;
+
+    @PositiveOrZero
+    Integer participantLimit;
+
+    Boolean requestModeration;
+
+    @Enumerated(EnumType.STRING)
+    StateActionUser stateAction;
+
+    @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters")
+    String title;
+
+}
