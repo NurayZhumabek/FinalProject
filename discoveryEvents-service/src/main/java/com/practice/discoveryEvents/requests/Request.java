@@ -4,7 +4,6 @@ package com.practice.discoveryEvents.requests;
 import com.practice.discoveryEvents.events.Event;
 import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.util.RequestStatus;
-import com.practice.discoveryEvents.util.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

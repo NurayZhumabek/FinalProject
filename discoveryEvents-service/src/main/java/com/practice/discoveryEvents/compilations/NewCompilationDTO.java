@@ -14,12 +14,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewCompilationDTO {
 
-    List<Integer> eventsIds;
+    List<Integer> events;
     Boolean pinned = false;
 
     @NotBlank(message = "Title is required")
     @Size(min = 1, max = 50, message = "Title must be between 1 and 50 characters")
     String title;
-
 
 }

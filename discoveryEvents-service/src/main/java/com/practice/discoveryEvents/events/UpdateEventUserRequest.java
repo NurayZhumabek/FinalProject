@@ -1,12 +1,8 @@
 package com.practice.discoveryEvents.events;
 
 
-import com.practice.discoveryEvents.categories.CategoryDTO;
-import com.practice.discoveryEvents.util.Location;
 import com.practice.discoveryEvents.util.LocationDTO;
 import com.practice.discoveryEvents.util.StateActionUser;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Positive;
@@ -29,7 +25,7 @@ public class UpdateEventUserRequest {
     String annotation;
 
     @Positive(message = "Category ID is must be a positive number")
-    Integer categoryId;
+    Integer category;
 
     @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters")
     String description;
@@ -37,7 +33,9 @@ public class UpdateEventUserRequest {
     @Future(message = "Event date should be in the future")
     LocalDateTime eventDate;
 
+    @Valid
     LocationDTO location;
+
     Boolean paid;
 
     @PositiveOrZero
@@ -45,7 +43,6 @@ public class UpdateEventUserRequest {
 
     Boolean requestModeration;
 
-    @Enumerated(EnumType.STRING)
     StateActionUser stateAction;
 
     @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters")

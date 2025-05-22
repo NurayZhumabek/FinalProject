@@ -1,9 +1,14 @@
 package com.practice.discoveryEvents.users;
 
 
+import com.practice.discoveryEvents.categories.Category;
+import com.practice.discoveryEvents.categories.CategoryDTO;
+import com.practice.discoveryEvents.categories.CategoryService;
+import com.practice.discoveryEvents.categories.NewCategoryDTO;
 import com.practice.discoveryEvents.compilations.*;
 import com.practice.discoveryEvents.events.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -21,18 +26,20 @@ public class AdminController {
     private final ModelMapper modelMapper;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CategoryService categoryService;
 
-    public AdminController(UserService userService, ModelMapper modelMapper, EventService eventService, CompilationService compilationService) {
+    public AdminController(UserService userService, ModelMapper modelMapper, EventService eventService, CompilationService compilationService, CategoryService categoryService) {
         this.userService = userService;
         this.modelMapper = modelMapper;
         this.eventService = eventService;
         this.compilationService = compilationService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDTO> getUsers(@RequestParam(value = "from", defaultValue = "0") int from,
-                                  @RequestParam(value = "size", defaultValue = "10") int size,
+    public List<UserDTO> getUsers(@RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
+                                  @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size,
                                   @RequestParam(value = "ids", required = false) List<Integer> ids) {
         return userService.getAllUsers(ids, from, size)
                 .stream()
@@ -102,10 +109,28 @@ public class AdminController {
     }
 
 
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CategoryDTO createCategory(@RequestBody @Valid NewCategoryDTO categoryDTO) {
+        Category category = modelMapper.map(categoryDTO, Category.class);
+        Category created = categoryService.createCategory(category);
+        return modelMapper.map(created, CategoryDTO.class);
+    }
 
+    @DeleteMapping("/categories/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable("catId") Integer catId) {
+        categoryService.deleteCategory(catId);
+    }
 
-
-
+    @PatchMapping("/categories/{catId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CategoryDTO updateCategory(@PathVariable("catId") Integer catId,
+                                      @RequestBody @Valid NewCategoryDTO categoryDTO) {
+        Category category = modelMapper.map(categoryDTO, Category.class);
+        Category updated = categoryService.updateCategory(catId, category);
+        return modelMapper.map(updated, CategoryDTO.class);
+    }
 
 
 }

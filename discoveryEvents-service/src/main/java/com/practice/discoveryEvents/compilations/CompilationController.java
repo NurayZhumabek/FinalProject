@@ -1,6 +1,7 @@
 package com.practice.discoveryEvents.compilations;
 
 
+import jakarta.validation.constraints.Min;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,8 @@ public class CompilationController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<CompilationDTO> getCompilations(@RequestParam(required = false) Boolean pinned,
-                                                @RequestParam(defaultValue = "0") Integer from,
-                                                @RequestParam(defaultValue = "10") Integer size) {
+                                                @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                @RequestParam(defaultValue = "10") @Min(1) Integer size) {
         return  compilationService.getCompilations(pinned,from,size)
                 .stream()
                 .map(c -> mapper.map(c,CompilationDTO.class))

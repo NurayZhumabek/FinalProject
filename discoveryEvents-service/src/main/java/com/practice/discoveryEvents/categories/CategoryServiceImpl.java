@@ -1,8 +1,8 @@
 package com.practice.discoveryEvents.categories;
 
 import com.practice.discoveryEvents.events.EventRepository;
-import com.practice.discoveryEvents.util.AccessDeniedException;
 import com.practice.discoveryEvents.util.AlreadyExistsException;
+import com.practice.discoveryEvents.util.ConflictException;
 import com.practice.discoveryEvents.util.NotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +34,8 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsById(categoryId)){
             throw new NotFoundException("Category with id " + categoryId + " does not exist");
         }
-        if (!eventRepository.findEventsByCategoryId(categoryId).isEmpty()) {
-            throw new AccessDeniedException("The category is not empty");
+        if (eventRepository.existsByCategoryId(categoryId)) {
+            throw new ConflictException("The category is not empty");
         }
 
          categoryRepository.deleteById(categoryId);
@@ -46,7 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category current = getCategoryById(categoryId);
 
         categoryRepository.findByName(category.getName())
-                .filter(c-> c.getId() != categoryId)
+                .filter(c-> c.getId().equals(categoryId))
                 .ifPresent(c -> {
                     throw new AlreadyExistsException("Category with name " + category.getName() + " already exists");
                 });

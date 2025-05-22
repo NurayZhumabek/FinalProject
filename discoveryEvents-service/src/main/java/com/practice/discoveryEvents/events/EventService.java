@@ -5,24 +5,20 @@ import java.util.List;
 public interface EventService {
 
 
-    // пока неизвестно но надо ли вызывать на контролллере Users
-    // так как путь GET///users/{userId}/events
-    List<Event> getEventsByUser(int userId, int from, int size);
 
-    Event createEvent(NewEventDTO event, int userId);
-    Event getEventByUserById(int eventId,int userId);
-    Event updateEventByUser(int eventId,UpdateEventUserRequest event,int userId);
+    List<Event> getEventsByUser(Integer userId,Integer from, Integer size);
+
+    Event createEvent(NewEventDTO event, Integer userId);
+    Event getEventByUserById(Integer eventId,Integer userId);
+    Event updateEventByUser(Integer eventId,UpdateEventUserRequest event,Integer userId);
 
 
-    // public GET events/{id}
-    Event getPublicEventById(int eventId);
+    Event getPublicEventById(Integer eventId);
 
-    /*
-           GET/events
-                Получение событий с возможностью фильтрации */
+
     List<Event> getPublishedEvents(EventFilterParams eventFilter);
 
     List<Event> searchEventsByAdmin(EventAdminFilterParams eventFiler);
 
-    Event updateEventByAdmin(int eventId, UpdateEventAdminRequestDTO updated);
+    Event updateEventByAdmin(Integer eventId, UpdateEventAdminRequestDTO updated);
 }

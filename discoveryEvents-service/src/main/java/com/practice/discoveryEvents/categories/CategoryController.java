@@ -1,6 +1,7 @@
 package com.practice.discoveryEvents.categories;
 
 
+import jakarta.validation.constraints.Min;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,8 @@ public class CategoryController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<CategoryDTO> getAllCategories(@RequestParam(defaultValue = "0") Integer from,
-                                              @RequestParam(defaultValue = "10") Integer size) {
+    public List<CategoryDTO> getAllCategories(@RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(defaultValue = "10") @Min(1) Integer size) {
         return categoryService.getAllCategories(from, size)
                 .stream()
                 .map(category -> modelMapper.map(category, CategoryDTO.class))
@@ -37,6 +38,8 @@ public class CategoryController {
         Category category = categoryService.getCategoryById(catId);
         return modelMapper.map(category, CategoryDTO.class);
     }
+
+
 
 
 }

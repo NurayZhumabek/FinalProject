@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 @Embeddable
 public class Location {
 
-
-    Float latitude;
-    Float longitude;
+    Float lat;
+    Float lon;
 }

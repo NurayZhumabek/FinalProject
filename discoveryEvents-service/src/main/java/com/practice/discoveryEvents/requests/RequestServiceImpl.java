@@ -5,15 +5,14 @@ import com.practice.discoveryEvents.events.EventRepository;
 import com.practice.discoveryEvents.events.EventService;
 import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.users.UserService;
-import com.practice.discoveryEvents.util.AccessDeniedException;
-import com.practice.discoveryEvents.util.AlreadyExistsException;
-import com.practice.discoveryEvents.util.NotFoundException;
-import com.practice.discoveryEvents.util.RequestStatus;
+import com.practice.discoveryEvents.util.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -23,16 +22,19 @@ public class RequestServiceImpl implements RequestService {
     private final EventService eventService;
     private final UserService userService;
     private final EventRepository eventRepository;
+    private final ModelMapper modelMapper;
 
-    public RequestServiceImpl(RequestRepository requestRepository, EventService eventService, UserService userService, EventRepository eventRepository) {
+    public RequestServiceImpl(RequestRepository requestRepository, EventService eventService, UserService userService, EventRepository eventRepository, ModelMapper modelMapper) {
         this.requestRepository = requestRepository;
         this.eventService = eventService;
         this.userService = userService;
         this.eventRepository = eventRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
     public List<Request> getRequestsByRequesterId(Integer requesterId) {
+        User user = userService.getUserById(requesterId);
         return requestRepository.findByRequesterId(requesterId);
     }
 
@@ -40,18 +42,13 @@ public class RequestServiceImpl implements RequestService {
     public Request createRequest(Integer userId, Integer eventId) {
 
         if (checkRequest(userId, eventId) != null) {
-            throw new AlreadyExistsException("Request is already created by " + userId + " for event " + eventId);
+            throw new ConflictException("Request is already created by " + userId + " for event " + eventId);
         }
 
         Event event = eventService.getPublicEventById(eventId);
 
         if (event.getInitiator().getId().equals(userId)) {
-            throw new AccessDeniedException("Initiator cannot send a request");
-        }
-
-        if (event.getParticipantLimit() != 0 &&
-                event.getConfirmedRequests() >= event.getParticipantLimit()) {
-            throw new AccessDeniedException("Participant limit exceeded for this event " + eventId);
+            throw new ConflictException("Initiator cannot send a request");
         }
 
         Request request = new Request();
@@ -62,12 +59,20 @@ public class RequestServiceImpl implements RequestService {
         request.setRequester(requester);
         request.setCreated(LocalDateTime.now());
 
-        if (Boolean.FALSE.equals(event.getRequestModeration()) && event.getParticipantLimit() == 0 ) {
+        if (event.getParticipantLimit() == 0) {
             request.setStatus(RequestStatus.CONFIRMED);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+        } else if (event.getConfirmedRequests() < event.getParticipantLimit()) {
+            if (Boolean.FALSE.equals(event.getRequestModeration())) {
+                request.setStatus(RequestStatus.CONFIRMED);
+                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            } else {
+                request.setStatus(RequestStatus.PENDING);
+            }
         } else {
-            request.setStatus(RequestStatus.PENDING);
+            throw new ConflictException("Participant limit exceeded for this event " + eventId);
         }
+
 
         eventRepository.save(event);
 
@@ -107,7 +112,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<Request> getRequestsByInitiator(Integer eventId, Integer initiatorId) {
         User user = userService.getUserById(initiatorId);
-        Event event = eventService.getPublicEventById(eventId);
+        Event event =eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found"));
 
         if (!event.getInitiator().getId().equals(initiatorId)) {
             throw new AccessDeniedException("You are not owner of this event");
@@ -153,8 +159,30 @@ public class RequestServiceImpl implements RequestService {
 
         }
 
-        result.setConfirmedRequests(confirmedList);
-        result.setRejectedRequests(rejectedList);
+        if (event.getConfirmedRequests() >= event.getParticipantLimit()){
+            List<Request> pending =requestRepository.getRequestsByEventId(eventId)
+                    .stream()
+                    .filter(request -> request.getStatus().equals(RequestStatus.PENDING))
+                    .collect(Collectors.toList());
+
+            for (Request request : pending) {
+                request.setStatus(RequestStatus.REJECTED);
+                requestRepository.save(request);
+                rejectedList.add(request);
+            }
+
+        }
+
+        result.setConfirmedRequests(
+                confirmedList.stream()
+                        .map(r-> modelMapper.map(r, ParticipationRequestDTO.class))
+                        .collect(Collectors.toList())
+        );
+        result.setRejectedRequests(
+                rejectedList.stream()
+                        .map(r->modelMapper.map(r, ParticipationRequestDTO.class))
+                        .collect(Collectors.toList())
+        );
 
         return result;
     }

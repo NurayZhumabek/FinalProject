@@ -4,10 +4,7 @@ import com.practice.discoveryEvents.categories.Category;
 import com.practice.discoveryEvents.categories.CategoryService;
 import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.users.UserService;
-import com.practice.discoveryEvents.util.AccessDeniedException;
-import com.practice.discoveryEvents.util.Location;
-import com.practice.discoveryEvents.util.NotFoundException;
-import com.practice.discoveryEvents.util.Status;
+import com.practice.discoveryEvents.util.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,37 +28,32 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event updateEventByUser(int eventId, UpdateEventUserRequest updated, int userId) {
+    public Event updateEventByUser(Integer eventId, UpdateEventUserRequest updated, Integer userId) {
 
         User initiator = userService.getUserById(userId);
         Event current = getEventByUserById(eventId, initiator.getId());
 
+        if (current.getStatus() != Status.PENDING && current.getStatus() != Status.CANCELED) {
+            throw new ConflictException("Only events in PENDING or CANCELED state can be updated");
+        }
+
+        if (updated.getEventDate() != null && !updated.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
+            throw new ConflictException("Event start time must be at least 2 hours from now!");
+        }
+
         if (updated.getStateAction() != null) {
             switch (updated.getStateAction()) {
-                case SEND_TO_REVIEW -> {
-                    if (current.getStatus() == Status.PUBLISHED) {
-                        throw new AccessDeniedException("PUBLISHED status cannot be changed!");
-                    }
+                case SEND_TO_REVIEW -> current.setStatus(Status.PENDING);
 
-                    if (updated.getEventDate() != null && !updated.getEventDate().isAfter(LocalDateTime.now().plusHours(2))) {
-                        throw new AccessDeniedException("Event start time must be after at least 2 hour from now!");
-                    }
-                    current.setStatus(Status.PENDING);
-                }
-                case CANCEL_REVIEW -> {
-                    if (current.getStatus() == Status.PUBLISHED) {
-                        throw new AccessDeniedException("PUBLISHED status cannot be changed!");
-                    }
-                    current.setStatus(Status.CANCELED);
-                }
+                case CANCEL_REVIEW -> current.setStatus(Status.CANCELED);
+
             }
         }
-        // ТУТ ГДЕ ЕСТЬ АННОТАЦИИ И ЗАЧЕМ ПРОВЕРЯТЬ НО null МНЕ КАЖЕТСЯ ЛОГИЧНО ПРОВЕРЯТЬ ТОЛЬКО СУЩЕСТВУЕТ ЛИ ИМЕННО КАТЕГОРИЯ
 
         if (updated.getAnnotation() != null) current.setAnnotation(updated.getAnnotation());
 
-        if (updated.getCategoryId() != null) {
-            Category category = categoryService.getCategoryById(updated.getCategoryId());
+        if (updated.getCategory() != null) {
+            Category category = categoryService.getCategoryById(updated.getCategory());
             current.setCategory(category);
         }
 
@@ -70,8 +62,8 @@ public class EventServiceImpl implements EventService {
 
         if (updated.getLocation() != null) {
             Location location = new Location();
-            location.setLatitude(updated.getLocation().getLatitude());
-            location.setLongitude(updated.getLocation().getLongitude());
+            location.setLat(updated.getLocation().getLat());
+            location.setLon(updated.getLocation().getLon());
             current.setLocation(location);
         }
 
@@ -85,23 +77,25 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public Event getEventByUserById(int eventId, int userId) {
+    public Event getEventByUserById(Integer eventId, Integer userId) {
         userService.getUserById(userId);
         return eventRepository.findEventByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
     }
 
     @Override
-    public List<Event> getEventsByUser(int userId, int from, int size) {
+    public List<Event> getEventsByUser(Integer userId, Integer from, Integer size) {
         userService.getUserById(userId);
+
+        Specification<Event> spec = EventSpecifications.hasUserId(userId);
 
         Pageable pageable = PageRequest.of((from / size), size);
 
-        return eventRepository.findEventsByInitiatorId(userId, pageable).getContent();
+        return eventRepository.findAll(spec, pageable).getContent();
     }
 
     @Override
-    public Event createEvent(NewEventDTO newEventDTO, int userId) {
+    public Event createEvent(NewEventDTO newEventDTO, Integer userId) {
 
         User initiator = userService.getUserById(userId);
         Event event = new Event();
@@ -113,8 +107,8 @@ public class EventServiceImpl implements EventService {
         event.setEventDate(eventTime);
         event.setInitiator(initiator);
 
-        if (newEventDTO.getCategoryId() != null) {
-            Category category = categoryService.getCategoryById(newEventDTO.getCategoryId());
+        if (newEventDTO.getCategory() != null) {
+            Category category = categoryService.getCategoryById(newEventDTO.getCategory());
             event.setCategory(category);
         }
 
@@ -122,11 +116,15 @@ public class EventServiceImpl implements EventService {
 
         if (newEventDTO.getLocation() != null) {
             Location location = new Location();
-            location.setLatitude(newEventDTO.getLocation().getLatitude());
-            location.setLongitude(newEventDTO.getLocation().getLongitude());
+            location.setLat(newEventDTO.getLocation().getLat());
+            location.setLon(newEventDTO.getLocation().getLon());
             event.setLocation(location);
         }
+        if (event.getConfirmedRequests() == null) {
+            event.setConfirmedRequests(0);
+        }
 
+        event.setAnnotation(newEventDTO.getAnnotation());
         event.setPaid(newEventDTO.getPaid());
         event.setParticipantLimit(newEventDTO.getParticipantLimit());
         event.setRequestModeration(newEventDTO.getRequestModeration());
@@ -141,15 +139,12 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public Event getPublicEventById(int eventId) {
+    public Event getPublicEventById(Integer eventId) {
         return eventRepository.findEventByIdAndStatus(eventId, Status.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event not found or not published"));
     }
 
 
-    /*
-   GET/events
-        Получение событий с возможностью фильтрации */
     @Override
     public List<Event> getPublishedEvents(EventFilterParams eventFilter) {
 
@@ -220,25 +215,27 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event updateEventByAdmin(int eventId, UpdateEventAdminRequestDTO updated) {
+    public Event updateEventByAdmin(Integer eventId, UpdateEventAdminRequestDTO updated) {
 
-        Event current = getPublicEventById(eventId);
+        Event current = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found"));
 
         if (updated.getStateAction() != null) {
             switch (updated.getStateAction()) {
                 case PUBLISH_EVENT -> {
                     if (current.getStatus() != Status.PENDING) {
-                        throw new AccessDeniedException("Only PENDING status events can be updated!");
+                        throw new ConflictException("Only PENDING status events can be updated!");
                     }
                     if (updated.getEventDate() != null && !updated.getEventDate().isAfter(LocalDateTime.now().plusHours(1))) {
-                        throw new AccessDeniedException("Event start time must be after at least 1 hour from now!");
+                        throw new ConflictException("Event start time must be after at least 1 hour from now!");
                     }
                     current.setStatus(Status.PUBLISHED);
+                    current.setPublishedOn(LocalDateTime.now());
                 }
 
                 case REJECT_EVENT -> {
                     if (current.getStatus() == Status.PUBLISHED) {
-                        throw new AccessDeniedException("PUBLISHED status cannot be rejected!");
+                        throw new ConflictException("PUBLISHED status cannot be rejected!");
                     }
                     current.setStatus(Status.CANCELED);
                 }
@@ -253,8 +250,8 @@ public class EventServiceImpl implements EventService {
         if (updated.getRequestModeration() != null) current.setRequestModeration(updated.getRequestModeration());
         if (updated.getLocation() != null) {
             Location location = new Location();
-            location.setLatitude(updated.getLocation().getLatitude());
-            location.setLongitude(updated.getLocation().getLongitude());
+            location.setLat(updated.getLocation().getLat());
+            location.setLon(updated.getLocation().getLon());
             current.setLocation(location);
         }
         if (updated.getCategoryId() != null) {
@@ -273,6 +270,8 @@ public class EventServiceImpl implements EventService {
             spec = spec.and(EventSpecifications.isAfterStart(rangeStart));
         } else if (rangeEnd != null) {
             spec = spec.and(EventSpecifications.isBeforeEnd(rangeEnd));
+        } else {
+            spec = spec.and(EventSpecifications.isAfterStart(LocalDateTime.now()));
         }
         return spec;
     }

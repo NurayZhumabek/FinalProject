@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 public class LocationDTO {
 
     @NotNull(message = "Latitude is required")
-    Float latitude;
+    Float lat;
 
     @NotNull(message = "Longitude is required")
-    Float longitude;
+    Float lon;
 }

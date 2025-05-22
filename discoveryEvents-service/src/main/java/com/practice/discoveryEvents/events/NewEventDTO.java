@@ -24,7 +24,7 @@ public class NewEventDTO {
     String annotation;
 
     @NotNull(message = "Category ID is required")
-    Integer categoryId;
+    Integer category;
 
     @NotBlank(message = "Description is required")
     @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters")

@@ -25,7 +25,7 @@ public class EventShortDTO {
     @NotNull
     CategoryDTO category;
 
-    Integer confirmedResults;
+    Integer confirmedRequests;
 
     @NotNull
     @Future(message = "Event date should be in the future")

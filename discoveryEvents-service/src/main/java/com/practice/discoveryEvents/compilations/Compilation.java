@@ -1,10 +1,8 @@
 package com.practice.discoveryEvents.compilations;
 
 
-import com.practice.discoveryEvents.categories.Category;
 import com.practice.discoveryEvents.events.Event;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,19 +18,6 @@ import java.util.List;
 @Entity
 public class Compilation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    int id;
-
-    @Column(name = "title")
-    String title;
-
-
-    @Column(name = "pinned", nullable = false)
-    Boolean pinned;
-
-
     @ManyToMany
     @JoinTable(
             name = "compilation_event",
@@ -41,7 +26,15 @@ public class Compilation {
     )
     List<Event> events = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    Category category;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Integer id;
+
+    @Column(name = "pinned", nullable = false)
+    Boolean pinned;
+
+    @Column(name = "title")
+    String title;
+
 }

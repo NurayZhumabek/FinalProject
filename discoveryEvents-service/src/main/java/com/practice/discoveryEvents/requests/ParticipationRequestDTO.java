@@ -23,4 +23,5 @@ public class ParticipationRequestDTO {
     Integer eventId;
     Integer requesterId;
     RequestStatus status;
+    Integer id;
 }

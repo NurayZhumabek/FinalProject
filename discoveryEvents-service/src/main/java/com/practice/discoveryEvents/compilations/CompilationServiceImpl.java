@@ -2,7 +2,6 @@ package com.practice.discoveryEvents.compilations;
 
 
 import com.practice.discoveryEvents.events.Event;
-import com.practice.discoveryEvents.events.EventRepository;
 import com.practice.discoveryEvents.events.EventService;
 import com.practice.discoveryEvents.util.NotFoundException;
 import org.springframework.data.domain.PageRequest;
@@ -10,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,10 +30,8 @@ public class CompilationServiceImpl implements CompilationService {
 
         Pageable pageable = PageRequest.of((from / size), size);
 
-        if (pinned != null)
-            return compilationRepository.getCompilationsByPinned(pinned, pageable);
-        else
-            return compilationRepository.findAll(pageable).getContent();
+        if (pinned != null) return compilationRepository.getCompilationsByPinned(pinned, pageable);
+        else return compilationRepository.findAll(pageable).getContent();
 
     }
 
@@ -43,7 +42,8 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public Compilation createCompilation(NewCompilationDTO newCompilationDTO) {
-        List<Integer> eventIds = new ArrayList<>(newCompilationDTO.getEventsIds());
+
+        List<Integer> eventIds = Optional.ofNullable(newCompilationDTO.getEvents()).orElse(Collections.emptyList());
 
         List<Event> events = checkEvents(eventIds);
 
@@ -68,7 +68,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation compilation = getCompilationById(id);
 
-        List<Integer> eventIds = new ArrayList<>(updateCompilationDTO.getEventIds());
+        List<Integer> eventIds = Optional.ofNullable(updateCompilationDTO.getEventIds()).orElse(Collections.emptyList());
         List<Event> events = checkEvents(eventIds);
 
         if (!events.isEmpty()) {
@@ -87,7 +87,6 @@ public class CompilationServiceImpl implements CompilationService {
         List<Event> events = new ArrayList<>();
         if (!ids.isEmpty()) {
             events.addAll(ids.stream().distinct().map(eventService::getPublicEventById).collect(Collectors.toList()));
-
         }
         return events;
     }

@@ -8,8 +8,6 @@ import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.util.Location;
 import com.practice.discoveryEvents.util.Status;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,26 +30,19 @@ public class Event {
     Integer id;
 
     @Column(name = "title")
-    @NotBlank(message = " Title must not be empty")
     String title;
 
-
     @Column(name = "annotation")
-    @NotBlank(message = " Annotation must not be empty")
     String annotation;
 
     @Column(name = "description")
-    @NotBlank(message = " Description must not be empty")
     String description;
 
     @Column(name = "paid", nullable = false)
-    @NotNull
     Boolean paid;
-
 
     @Column(name = "eventDate", nullable = false)
     LocalDateTime eventDate;
-
 
     @Embedded
     Location location;
@@ -64,8 +55,8 @@ public class Event {
     Boolean requestModeration;
 
 
-    @Column(name = "confirmedRequests", nullable = false)
-    int confirmedRequests;
+    @Column(name = "confirmedRequests")
+    Integer confirmedRequests;
 
 
     @Column(name = "views")
@@ -94,6 +85,6 @@ public class Event {
     @Column(name = "created_on", nullable = false)
     LocalDateTime createdOn;
 
-    @Column(name = "published_on", nullable = false)
+    @Column(name = "published_on")
     LocalDateTime publishedOn;
 }

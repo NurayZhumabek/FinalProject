@@ -58,6 +58,10 @@ public class EventSpecifications {
         return ((root, query, criteriaBuilder) -> root.get("status").in(statuses));
     }
 
+    public static Specification<Event> hasUserId(Integer userId) {
+        return (root, query, criteriabuilder) -> root.get("initiator").get("id").in(userId);
+    }
+
 
 
 
