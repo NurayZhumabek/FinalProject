@@ -1,6 +1,6 @@
 package com.practice.discoveryEvents.util;
 
-public enum Status {
+public enum State {
     PENDING,
     CANCELED,
     PUBLISHED

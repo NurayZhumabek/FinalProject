@@ -1,6 +1,6 @@
 package com.practice.discoveryEvents.events;
 
-import com.practice.discoveryEvents.util.Status;
+import com.practice.discoveryEvents.util.State;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,7 +17,7 @@ public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpeci
 
     List<Event> findEventsByCategoryId(int categoryId);
 
-    Optional<Event> findEventByIdAndStatus(int eventId, Status status);
+    Optional<Event> findEventByIdAndStatus(int eventId, State status);
 
     Boolean existsByCategoryId(int categoryId);
 

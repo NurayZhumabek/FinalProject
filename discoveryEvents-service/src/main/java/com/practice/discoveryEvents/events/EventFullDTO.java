@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.practice.discoveryEvents.categories.CategoryDTO;
 import com.practice.discoveryEvents.users.UserShortDTO;
 import com.practice.discoveryEvents.util.LocationDTO;
-import com.practice.discoveryEvents.util.Status;
+import com.practice.discoveryEvents.util.State;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -40,7 +40,7 @@ public class EventFullDTO {
     LocalDateTime publishedOn;
 
     Boolean requestModeration;
-    Status status;
+    State state;
     String title;
     Integer views;
 

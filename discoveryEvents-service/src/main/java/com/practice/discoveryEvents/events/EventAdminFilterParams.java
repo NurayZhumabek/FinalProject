@@ -1,6 +1,6 @@
 package com.practice.discoveryEvents.events;
 
-import com.practice.discoveryEvents.util.Status;
+import com.practice.discoveryEvents.util.State;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class EventAdminFilterParams {
     List<Integer> userIds;
-    List<Status> statuses;
+    List<State> statuses;
     List<Integer> categoryIds;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

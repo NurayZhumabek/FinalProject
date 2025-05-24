@@ -33,7 +33,7 @@ public class EventServiceImpl implements EventService {
         User initiator = userService.getUserById(userId);
         Event current = getEventByUserById(eventId, initiator.getId());
 
-        if (current.getStatus() != Status.PENDING && current.getStatus() != Status.CANCELED) {
+        if (current.getStatus() != State.PENDING && current.getStatus() != State.CANCELED) {
             throw new ConflictException("Only events in PENDING or CANCELED state can be updated");
         }
 
@@ -43,9 +43,9 @@ public class EventServiceImpl implements EventService {
 
         if (updated.getStateAction() != null) {
             switch (updated.getStateAction()) {
-                case SEND_TO_REVIEW -> current.setStatus(Status.PENDING);
+                case SEND_TO_REVIEW -> current.setStatus(State.PENDING);
 
-                case CANCEL_REVIEW -> current.setStatus(Status.CANCELED);
+                case CANCEL_REVIEW -> current.setStatus(State.CANCELED);
 
             }
         }
@@ -131,7 +131,7 @@ public class EventServiceImpl implements EventService {
 
         event.setTitle(newEventDTO.getTitle());
 
-        event.setStatus(Status.PENDING);
+        event.setStatus(State.PENDING);
         event.setCreatedOn(LocalDateTime.now());
         return eventRepository.save(event);
 
@@ -140,7 +140,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getPublicEventById(Integer eventId) {
-        return eventRepository.findEventByIdAndStatus(eventId, Status.PUBLISHED)
+        return eventRepository.findEventByIdAndStatus(eventId, State.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event not found or not published"));
     }
 
@@ -150,7 +150,7 @@ public class EventServiceImpl implements EventService {
 
         Specification<Event> spec = Specification.where(null);
 
-        spec = spec.and(EventSpecifications.hasStatus(Status.PUBLISHED));
+        spec = spec.and(EventSpecifications.hasStatus(State.PUBLISHED));
 
         if (eventFilter.getText() != null && !eventFilter.getText().isEmpty()) {
             spec = spec.and(EventSpecifications.hasText(eventFilter.getText()));
@@ -223,21 +223,21 @@ public class EventServiceImpl implements EventService {
         if (updated.getStateAction() != null) {
             switch (updated.getStateAction()) {
                 case PUBLISH_EVENT -> {
-                    if (current.getStatus() != Status.PENDING) {
+                    if (current.getStatus() != State.PENDING) {
                         throw new ConflictException("Only PENDING status events can be updated!");
                     }
                     if (updated.getEventDate() != null && !updated.getEventDate().isAfter(LocalDateTime.now().plusHours(1))) {
                         throw new ConflictException("Event start time must be after at least 1 hour from now!");
                     }
-                    current.setStatus(Status.PUBLISHED);
+                    current.setStatus(State.PUBLISHED);
                     current.setPublishedOn(LocalDateTime.now());
                 }
 
                 case REJECT_EVENT -> {
-                    if (current.getStatus() == Status.PUBLISHED) {
+                    if (current.getStatus() == State.PUBLISHED) {
                         throw new ConflictException("PUBLISHED status cannot be rejected!");
                     }
-                    current.setStatus(Status.CANCELED);
+                    current.setStatus(State.CANCELED);
                 }
             }
         }

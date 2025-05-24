@@ -2,6 +2,7 @@ package com.practice.discoveryEvents.categories;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,7 @@ public class Category {
 
 
     @Column(name = "name")
+    @Size(min =1,max = 50,message = "Category name must be between 1 and 50 characters")
     String name;
 
 }

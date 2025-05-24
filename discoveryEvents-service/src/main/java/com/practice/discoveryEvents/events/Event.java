@@ -6,8 +6,9 @@ import com.practice.discoveryEvents.compilations.Compilation;
 import com.practice.discoveryEvents.requests.Request;
 import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.util.Location;
-import com.practice.discoveryEvents.util.Status;
+import com.practice.discoveryEvents.util.State;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,12 +31,15 @@ public class Event {
     Integer id;
 
     @Column(name = "title")
+    @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters")
     String title;
 
     @Column(name = "annotation")
+    @Size(min = 20, max = 2000, message = "Annotation must be between 20 and 2000 characters")
     String annotation;
 
     @Column(name = "description")
+    @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters")
     String description;
 
     @Column(name = "paid", nullable = false)
@@ -79,7 +83,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    Status status;
+    State status;
 
 
     @Column(name = "created_on", nullable = false)
