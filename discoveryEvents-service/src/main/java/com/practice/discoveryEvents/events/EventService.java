@@ -15,10 +15,13 @@ public interface EventService {
 
     Event getPublicEventById(Integer eventId);
 
+    Event getEventById(Integer eventId);
 
     List<Event> getPublishedEvents(EventFilterParams eventFilter);
 
     List<Event> searchEventsByAdmin(EventAdminFilterParams eventFiler);
 
     Event updateEventByAdmin(Integer eventId, UpdateEventAdminRequestDTO updated);
+    Event findEventById(Integer eventId);
+
 }

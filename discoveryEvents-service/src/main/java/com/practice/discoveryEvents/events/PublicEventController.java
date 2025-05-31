@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@Validated
 @RequestMapping("/events")
+@Validated
 public class PublicEventController {
 
     private final EventService eventService;
@@ -34,7 +34,7 @@ public class PublicEventController {
 
     @GetMapping("/{id}")
     public EventFullDTO getPublicEventsById(@PathVariable int id) {
-        return mapper.map(eventService.getPublicEventById(id),EventFullDTO.class);
+        return mapper.map(eventService.getEventById(id),EventFullDTO.class);
     }
 
 

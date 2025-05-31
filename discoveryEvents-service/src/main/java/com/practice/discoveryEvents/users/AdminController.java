@@ -27,13 +27,16 @@ public class AdminController {
     private final EventService eventService;
     private final CompilationService compilationService;
     private final CategoryService categoryService;
+    private final CompilationMapper compilationMapper;
 
-    public AdminController(UserService userService, ModelMapper modelMapper, EventService eventService, CompilationService compilationService, CategoryService categoryService) {
+    public AdminController(UserService userService, ModelMapper modelMapper, EventService eventService,
+                           CompilationService compilationService, CategoryService categoryService, CompilationMapper compilationMapper) {
         this.userService = userService;
         this.modelMapper = modelMapper;
         this.eventService = eventService;
         this.compilationService = compilationService;
         this.categoryService = categoryService;
+        this.compilationMapper = compilationMapper;
     }
 
     @GetMapping("/users")
@@ -64,7 +67,6 @@ public class AdminController {
     }
 
 
-
     @GetMapping("/events")
     public List<EventFullDTO> getEvents(@ModelAttribute EventAdminFilterParams filterParams) {
 
@@ -81,7 +83,6 @@ public class AdminController {
         Event updatedEvent = eventService.updateEventByAdmin(eventId, eventDTO);
         return modelMapper.map(updatedEvent, EventFullDTO.class);
     }
-
 
 
     @PostMapping("/compilations")
@@ -101,11 +102,12 @@ public class AdminController {
 
     @PatchMapping("/compilations/{compId}")
     @ResponseStatus(HttpStatus.OK)
-    public CompilationDTO updateCompilation(@PathVariable("compId") int compId, @RequestBody @Valid UpdateCompilationRequestDTO compDTO) {
+    public CompilationDTO updateCompilation(
+            @PathVariable("compId") int compId,
+            @RequestBody @Valid UpdateCompilationRequestDTO compDTO) {
 
         Compilation updatedCompilation = compilationService.updateCompilationById(compId, compDTO);
-        return modelMapper.map(updatedCompilation, CompilationDTO.class);
-
+        return compilationMapper.toCompilationDTO(updatedCompilation);
     }
 
 
@@ -133,4 +135,26 @@ public class AdminController {
     }
 
 
+    public EventShortDTO toShortDto(Event event) {
+        EventShortDTO dto = new EventShortDTO();
+        dto.setId(event.getId());
+        dto.setTitle(event.getTitle());
+        dto.setAnnotation(event.getAnnotation());
+        dto.setEventDate(event.getEventDate());
+        dto.setPaid(event.getPaid());
+        dto.setConfirmedRequests(event.getConfirmedRequests());
+        dto.setViews(event.getViews());
+
+        CategoryDTO categoryDTO = new CategoryDTO();
+        categoryDTO.setId(event.getCategory().getId());
+        categoryDTO.setName(event.getCategory().getName());
+        dto.setCategory(categoryDTO);
+
+        UserShortDTO userDTO = new UserShortDTO();
+        userDTO.setId(event.getInitiator().getId());
+        userDTO.setName(event.getInitiator().getName());
+        dto.setInitiator(userDTO);
+
+        return dto;
+    }
 }

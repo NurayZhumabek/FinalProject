@@ -15,9 +15,7 @@ public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpeci
 
 
 
-    List<Event> findEventsByCategoryId(int categoryId);
-
-    Optional<Event> findEventByIdAndStatus(int eventId, State status);
+    Optional<Event> findEventByIdAndState(int eventId, State state);
 
     Boolean existsByCategoryId(int categoryId);
 

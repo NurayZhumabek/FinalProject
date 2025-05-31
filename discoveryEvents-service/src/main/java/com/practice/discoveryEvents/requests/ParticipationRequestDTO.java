@@ -20,8 +20,8 @@ public class ParticipationRequestDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime created;
 
-    Integer eventId;
-    Integer requesterId;
+    Integer event;
+    Integer requester;
     RequestStatus status;
     Integer id;
 }

@@ -24,8 +24,8 @@ public class EventSpecifications {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("paid"), isPaid);
     }
 
-    public static Specification<Event> hasStatus(State status) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status);
+    public static Specification<Event> hasState(State state) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("state"), state);
     }
 
     // for public and admin
@@ -54,8 +54,8 @@ public class EventSpecifications {
         return (root, query, criteriabuilder) -> root.get("initiator").get("id").in(userIds);
     }
 
-    public static Specification<Event> hasState(List<State> statuses) {
-        return ((root, query, criteriaBuilder) -> root.get("status").in(statuses));
+    public static Specification<Event> hasStates(List<State> statuses) {
+        return ((root, query, criteriaBuilder) -> root.get("state").in(statuses));
     }
 
     public static Specification<Event> hasUserId(Integer userId) {

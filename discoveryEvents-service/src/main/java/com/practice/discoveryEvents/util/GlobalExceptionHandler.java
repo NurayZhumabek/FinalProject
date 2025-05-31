@@ -37,23 +37,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleEntityAccessDeniedException(AccessDeniedException ex) {
         ApiError response = new ApiError(
-                HttpStatus.FORBIDDEN.name(),
+                HttpStatus.CONFLICT.name(),
                 "For the requested operation the conditions are not met.",
                 ex.getMessage(),
                 LocalDateTime.now()
         );
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<ApiError> handleEntityAlreadyExistsException(AlreadyExistsException ex) {
         ApiError response = new ApiError(
-                HttpStatus.FORBIDDEN.name(),
+                HttpStatus.CONFLICT.name(),
                 "For the requested operation the conditions are not met.",
                 ex.getMessage(),
                 LocalDateTime.now()
         );
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,6 +61,17 @@ public class GlobalExceptionHandler {
         ApiError response = new ApiError(
                 HttpStatus.BAD_REQUEST.name(),
                 "Incorrectly made request.",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex) {
+        ApiError response = new ApiError(
+                HttpStatus.BAD_REQUEST.name(),
+                "Bad request.",
                 ex.getMessage(),
                 LocalDateTime.now()
         );

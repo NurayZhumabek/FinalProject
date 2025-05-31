@@ -45,8 +45,7 @@ public class RequestServiceImpl implements RequestService {
             throw new ConflictException("Request is already created by " + userId + " for event " + eventId);
         }
 
-        Event event = eventService.getPublicEventById(eventId);
-
+        Event event =  eventService.getPublicEventById(eventId);
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Initiator cannot send a request");
         }
@@ -125,7 +124,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public EventRequestStatusUpdateResult updateRequestsStatus(Integer eventId, Integer initiatorId, EventRequestStatusUpdateRequestDTO requests) {
         User initiator = userService.getUserById(initiatorId);
-        Event event = eventService.getPublicEventById(eventId);
+        Event event = eventRepository.findEventByIdAndState(eventId, State.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException("Event not found or not published"));
 
         EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
         List<Request> confirmedList = new ArrayList<>();
@@ -135,34 +135,41 @@ public class RequestServiceImpl implements RequestService {
             throw new AccessDeniedException("You are not owner of this event");
         }
 
-        for (Integer requestId : requests.getRequestIds()) {
+        RequestStatus newStatusFromRequest = requests.getStatus();
 
+        for (Integer requestId : requests.getRequestIds()) {
             Request request = requestRepository.findById(requestId)
                     .orElseThrow(() -> new NotFoundException("Request with id " + requestId + " not found"));
 
             if (request.getStatus() != RequestStatus.PENDING) {
-                throw new AccessDeniedException("Request  with id " + requestId + " status is not PENDING");
+                throw new ConflictException("Request with id " + requestId + " status is not PENDING. Only PENDING requests can be updated.");
             }
 
+            if (newStatusFromRequest == RequestStatus.CONFIRMED) {
 
-            if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+                if (event.getConfirmedRequests() >= event.getParticipantLimit() && event.getParticipantLimit() != 0) {
+
+                    request.setStatus(RequestStatus.REJECTED);
+                    rejectedList.add(request);
+                } else {
+                    request.setStatus(RequestStatus.CONFIRMED);
+                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                    confirmedList.add(request);
+                }
+            } else if (newStatusFromRequest == RequestStatus.REJECTED) {
+
                 request.setStatus(RequestStatus.REJECTED);
-                requestRepository.save(request);
                 rejectedList.add(request);
-            } else {
-                request.setStatus(RequestStatus.CONFIRMED);
-                requestRepository.save(request);
-                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-                eventRepository.save(event);
-                confirmedList.add(request);
             }
-
+            requestRepository.save(request);
         }
 
-        if (event.getConfirmedRequests() >= event.getParticipantLimit()){
-            List<Request> pending =requestRepository.getRequestsByEventId(eventId)
+        eventRepository.save(event);
+
+        if (newStatusFromRequest == RequestStatus.CONFIRMED && event.getConfirmedRequests() >= event.getParticipantLimit()){
+            List<Request> pending = requestRepository.getRequestsByEventId(eventId)
                     .stream()
-                    .filter(request -> request.getStatus().equals(RequestStatus.PENDING))
+                    .filter(req -> req.getStatus().equals(RequestStatus.PENDING))
                     .collect(Collectors.toList());
 
             for (Request request : pending) {
@@ -170,23 +177,38 @@ public class RequestServiceImpl implements RequestService {
                 requestRepository.save(request);
                 rejectedList.add(request);
             }
-
         }
+
 
         result.setConfirmedRequests(
                 confirmedList.stream()
-                        .map(r-> modelMapper.map(r, ParticipationRequestDTO.class))
+                        .map(this::toParticipationRequestDTO)
                         .collect(Collectors.toList())
         );
         result.setRejectedRequests(
                 rejectedList.stream()
-                        .map(r->modelMapper.map(r, ParticipationRequestDTO.class))
+                        .map(this::toParticipationRequestDTO)
                         .collect(Collectors.toList())
         );
 
         return result;
     }
 
+    public ParticipationRequestDTO toParticipationRequestDTO(Request request) {
+        ParticipationRequestDTO dto = new ParticipationRequestDTO();
+        dto.setId(request.getId());
+        dto.setCreated(request.getCreated());
+        dto.setStatus(request.getStatus());
 
+        if (request.getEvent() != null) {
+            dto.setEvent(request.getEvent().getId());
+        }
+
+        if (request.getRequester() != null) {
+            dto.setRequester(request.getRequester().getId());
+        }
+
+        return dto;
+    }
 }
 

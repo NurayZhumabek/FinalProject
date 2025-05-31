@@ -89,7 +89,7 @@ public class UserController {
     public List<ParticipationRequestDTO> getRequestsByUser(@PathVariable Integer userId) {
         return requestService.getRequestsByRequesterId(userId)
                 .stream()
-                .map(request -> modelMapper.map(request, ParticipationRequestDTO.class))
+                .map(request -> toParticipationRequestDTO(request))
                 .collect(Collectors.toList());
     }
 
@@ -99,15 +99,32 @@ public class UserController {
     public ParticipationRequestDTO createRequest(@PathVariable Integer userId, @RequestParam Integer eventId) {
 
         Request createdRequest = requestService.createRequest(userId, eventId);
-        return modelMapper.map(createdRequest, ParticipationRequestDTO.class);
+        return toParticipationRequestDTO(createdRequest);
 
+    }
+
+    public ParticipationRequestDTO toParticipationRequestDTO(Request request) {
+        ParticipationRequestDTO dto = new ParticipationRequestDTO();
+        dto.setId(request.getId());
+        dto.setCreated(request.getCreated());
+        dto.setStatus(request.getStatus());
+
+        if (request.getEvent() != null) {
+            dto.setEvent(request.getEvent().getId());
+        }
+
+        if (request.getRequester() != null) {
+            dto.setRequester(request.getRequester().getId());
+        }
+
+        return dto;
     }
 
     @PatchMapping("/requests/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ParticipationRequestDTO cancelRequest(@PathVariable Integer userId, @PathVariable Integer requestId) {
         Request cancelledRequest = requestService.cancelRequest( requestId,userId);
-        return modelMapper.map(cancelledRequest, ParticipationRequestDTO.class);
+        return toParticipationRequestDTO(cancelledRequest);
     }
 
     @GetMapping("/events/{eventId}/requests")
@@ -115,7 +132,7 @@ public class UserController {
     public List<ParticipationRequestDTO> getRequestsByEventAndInitiator(@PathVariable Integer eventId, @PathVariable Integer userId) {
         return requestService.getRequestsByInitiator(eventId,userId)
                 .stream()
-                .map(request -> modelMapper.map(request,ParticipationRequestDTO.class))
+                .map(request -> toParticipationRequestDTO(request))
                 .collect(Collectors.toList());
     }
 

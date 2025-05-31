@@ -18,30 +18,23 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventShortDTO {
 
-    @NotBlank(message = "Annotation must not be empty")
     @Size(min = 20, max = 2000, message = "Annotation must be between 20 and 2000 characters")
     String annotation;
 
-    @NotNull
     CategoryDTO category;
 
     Integer confirmedRequests;
 
-    @NotNull
-    @Future(message = "Event date should be in the future")
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
 
     Integer id;
 
-    @NotNull
     UserShortDTO initiator;
 
-    @NotNull
     Boolean paid;
 
-    @NotBlank(message = "Title is required")
     @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters")
     String title;
 

@@ -45,11 +45,16 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Integer categoryId, Category category) {
         Category current = getCategoryById(categoryId);
 
-        categoryRepository.findByName(category.getName())
-                .filter(c-> c.getId().equals(categoryId))
-                .ifPresent(c -> {
-                    throw new AlreadyExistsException("Category with name " + category.getName() + " already exists");
-                });
+        if (!current.getName().equals(category.getName())) {
+            categoryRepository.findByName(category.getName())
+                    .ifPresent(existingCategory -> {
+                        if (!existingCategory.getId().equals(categoryId)) {
+                            throw new AlreadyExistsException("Category with name " + category.getName() + " already exists");
+                        }
+                    });
+        }
+
+
         current.setName(category.getName());
         return categoryRepository.save(current);
     }

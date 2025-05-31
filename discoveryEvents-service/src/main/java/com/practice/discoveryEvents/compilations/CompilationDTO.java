@@ -1,6 +1,7 @@
 package com.practice.discoveryEvents.compilations;
 
 
+import com.practice.discoveryEvents.events.EventFullDTO;
 import com.practice.discoveryEvents.events.EventShortDTO;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

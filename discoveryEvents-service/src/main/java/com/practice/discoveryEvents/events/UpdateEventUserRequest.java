@@ -1,6 +1,7 @@
 package com.practice.discoveryEvents.events;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.practice.discoveryEvents.util.LocationDTO;
 import com.practice.discoveryEvents.util.StateActionUser;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +33,8 @@ public class UpdateEventUserRequest {
     String description;
 
     @Future(message = "Event date should be in the future")
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
 
     @Valid

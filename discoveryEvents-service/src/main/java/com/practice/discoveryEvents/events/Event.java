@@ -82,8 +82,8 @@ public class Event {
 
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    State status;
+    @Column(name = "state", nullable = false)
+    State state;
 
 
     @Column(name = "created_on", nullable = false)
@@ -91,4 +91,6 @@ public class Event {
 
     @Column(name = "published_on")
     LocalDateTime publishedOn;
+
+
 }

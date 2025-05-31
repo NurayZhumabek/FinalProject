@@ -1,8 +1,12 @@
 package com.practice.discoveryEvents.compilations;
 
 
+import com.practice.discoveryEvents.categories.CategoryDTO;
 import com.practice.discoveryEvents.events.Event;
+import com.practice.discoveryEvents.events.EventRepository;
 import com.practice.discoveryEvents.events.EventService;
+import com.practice.discoveryEvents.events.EventShortDTO;
+import com.practice.discoveryEvents.users.UserShortDTO;
 import com.practice.discoveryEvents.util.NotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +24,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventService eventService;
 
-    public CompilationServiceImpl(CompilationRepository compilationRepository, EventService eventService) {
+    public CompilationServiceImpl(CompilationRepository compilationRepository, EventService eventService ) {
         this.compilationRepository = compilationRepository;
         this.eventService = eventService;
     }
@@ -86,8 +90,12 @@ public class CompilationServiceImpl implements CompilationService {
     private List<Event> checkEvents(List<Integer> ids) {
         List<Event> events = new ArrayList<>();
         if (!ids.isEmpty()) {
-            events.addAll(ids.stream().distinct().map(eventService::getPublicEventById).collect(Collectors.toList()));
+            events.addAll(ids.stream().distinct().map(eventService::findEventById).collect(Collectors.toList()));
         }
         return events;
     }
+
+
+
+
 }
