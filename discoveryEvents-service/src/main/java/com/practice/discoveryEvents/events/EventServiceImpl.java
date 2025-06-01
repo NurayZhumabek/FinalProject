@@ -218,16 +218,16 @@ public class EventServiceImpl implements EventService {
 
         Specification<Event> spec = Specification.where(null);
 
-        if (eventFiler.getUserIds() != null && !eventFiler.getUserIds().isEmpty()) {
-            spec = spec.and(EventSpecifications.hasUserIds(eventFiler.getUserIds()));
+        if (eventFiler.getUsers() != null && !eventFiler.getUsers().isEmpty()) {
+            spec = spec.and(EventSpecifications.hasUserIds(eventFiler.getUsers()));
         }
 
-        if (eventFiler.getStatuses() != null && !eventFiler.getStatuses().isEmpty()) {
-            spec = spec.and(EventSpecifications.hasStates(eventFiler.getStatuses()));
+        if (eventFiler.getStates() != null && !eventFiler.getStates().isEmpty()) {
+            spec = spec.and(EventSpecifications.hasStates(eventFiler.getStates()));
         }
 
-        if (eventFiler.getCategoryIds() != null && !eventFiler.getCategoryIds().isEmpty()) {
-            spec = spec.and(EventSpecifications.hasCategoryIds(eventFiler.getCategoryIds()));
+        if (eventFiler.getCategories() != null && !eventFiler.getCategories().isEmpty()) {
+            spec = spec.and(EventSpecifications.hasCategoryIds(eventFiler.getCategories()));
         }
 
         spec = getCommonEventSpecification(spec, eventFiler.getRangeStart(), eventFiler.getRangeEnd());

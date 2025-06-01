@@ -15,9 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventAdminFilterParams {
-    List<Integer> userIds;
-    List<State> statuses;
-    List<Integer> categoryIds;
+    List<Integer> users;
+    List<State> states;
+    List<Integer> categories;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime rangeStart;
