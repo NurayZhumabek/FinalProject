@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 
-import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpecificationExecutor<Event> {
@@ -14,13 +13,9 @@ public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpeci
     Optional<Event> findEventByIdAndInitiatorId(int eventId, int userId);
 
 
-
     Optional<Event> findEventByIdAndState(int eventId, State state);
 
     Boolean existsByCategoryId(int categoryId);
-
-
-
 
 
 }

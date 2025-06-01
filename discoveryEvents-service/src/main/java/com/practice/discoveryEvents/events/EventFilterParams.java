@@ -3,7 +3,6 @@ package com.practice.discoveryEvents.events;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.aspectj.lang.annotation.After;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
