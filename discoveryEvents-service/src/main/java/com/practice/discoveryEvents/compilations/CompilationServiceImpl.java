@@ -72,13 +72,14 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation compilation = getCompilationById(id);
 
-        List<Integer> eventIds = Optional.ofNullable(updateCompilationDTO.getEventIds()).orElse(Collections.emptyList());
+        List<Integer> eventIds = Optional.ofNullable(updateCompilationDTO.getEvents()).orElse(Collections.emptyList());
         List<Event> events = checkEvents(eventIds);
 
         if (!events.isEmpty()) {
             compilation.getEvents().clear();
             compilation.setEvents(events);
         }
+
         if (updateCompilationDTO.getTitle() != null && !updateCompilationDTO.getTitle().isBlank())
             compilation.setTitle(updateCompilationDTO.getTitle());
         if (updateCompilationDTO.getPinned() != null) compilation.setPinned(updateCompilationDTO.getPinned());
