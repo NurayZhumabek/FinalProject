@@ -4,6 +4,8 @@ package com.practice.discoveryEvents.users;
 import com.practice.discoveryEvents.categories.CategoryDTO;
 import com.practice.discoveryEvents.events.*;
 import com.practice.discoveryEvents.requests.*;
+import com.practice.discoveryEvents.stats.StatsClient;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.modelmapper.ModelMapper;
@@ -20,18 +22,24 @@ public class UserController {
     private final EventService eventService;
     private final ModelMapper modelMapper;
     private final RequestService requestService;
+    private final StatsClient statsClient;
 
-    public UserController(EventService eventService, ModelMapper modelMapper, RequestService requestService) {
+    public UserController(EventService eventService, ModelMapper modelMapper, RequestService requestService,
+                          StatsClient statsClient) {
         this.eventService = eventService;
         this.modelMapper = modelMapper;
         this.requestService = requestService;
+        this.statsClient = statsClient;
     }
 
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDTO> getEventsByUser(@PathVariable Integer userId,
-                                               @RequestParam(defaultValue = "0")  @Min(0) Integer from,
-                                               @RequestParam(defaultValue = "10") @Min(1) Integer size) {
+                                               @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                               @RequestParam(defaultValue = "10") @Min(1) Integer size,
+                                               HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         return eventService.getEventsByUser(userId, from, size)
                 .stream()
                 .map(this::toShortDto) // ← вот тут заменили
@@ -65,7 +73,10 @@ public class UserController {
     @PostMapping("/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDTO createEvent(@PathVariable Integer userId,
-                                    @RequestBody @Valid NewEventDTO eventDTO) {
+                                    @RequestBody @Valid NewEventDTO eventDTO,
+                                    HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         Event createdEvent = eventService.createEvent(eventDTO, userId);
         return modelMapper.map(createdEvent, EventFullDTO.class);
 
@@ -73,30 +84,42 @@ public class UserController {
 
     @GetMapping("/events/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDTO getEvent(@PathVariable Integer userId, @PathVariable Integer eventId) {
+    public EventFullDTO getEvent(@PathVariable Integer userId, @PathVariable Integer eventId,
+                                 HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         return modelMapper.map(eventService.getEventByUserById(eventId, userId), EventFullDTO.class);
     }
 
     @PatchMapping("/events/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDTO updateEvent(@PathVariable Integer userId, @PathVariable Integer eventId, @RequestBody @Valid UpdateEventUserRequest eventDTO) {
+    public EventFullDTO updateEvent(@PathVariable Integer userId, @PathVariable Integer eventId,
+                                    @RequestBody @Valid UpdateEventUserRequest eventDTO,
+                                    HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         return modelMapper.map(eventService.updateEventByUser(eventId, eventDTO, userId), EventFullDTO.class);
     }
 
 
     @GetMapping("/requests")
     @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationRequestDTO> getRequestsByUser(@PathVariable Integer userId) {
+    public List<ParticipationRequestDTO> getRequestsByUser(@PathVariable Integer userId,
+                                                           HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         return requestService.getRequestsByRequesterId(userId)
                 .stream()
-                .map(request -> toParticipationRequestDTO(request))
+                .map(req -> toParticipationRequestDTO(req))
                 .collect(Collectors.toList());
     }
 
 
     @PostMapping("/requests")
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDTO createRequest(@PathVariable Integer userId, @RequestParam Integer eventId) {
+    public ParticipationRequestDTO createRequest(@PathVariable Integer userId, @RequestParam Integer eventId,
+                                                 HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
 
         Request createdRequest = requestService.createRequest(userId, eventId);
         return toParticipationRequestDTO(createdRequest);
@@ -104,6 +127,7 @@ public class UserController {
     }
 
     public ParticipationRequestDTO toParticipationRequestDTO(Request request) {
+
         ParticipationRequestDTO dto = new ParticipationRequestDTO();
         dto.setId(request.getId());
         dto.setCreated(request.getCreated());
@@ -122,29 +146,36 @@ public class UserController {
 
     @PatchMapping("/requests/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
-    public ParticipationRequestDTO cancelRequest(@PathVariable Integer userId, @PathVariable Integer requestId) {
-        Request cancelledRequest = requestService.cancelRequest( requestId,userId);
+    public ParticipationRequestDTO cancelRequest(@PathVariable Integer userId, @PathVariable Integer requestId,
+                                                 HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
+        Request cancelledRequest = requestService.cancelRequest(requestId, userId);
         return toParticipationRequestDTO(cancelledRequest);
     }
 
     @GetMapping("/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationRequestDTO> getRequestsByEventAndInitiator(@PathVariable Integer eventId, @PathVariable Integer userId) {
-        return requestService.getRequestsByInitiator(eventId,userId)
+    public List<ParticipationRequestDTO> getRequestsByEventAndInitiator(@PathVariable Integer eventId,
+                                                                        @PathVariable Integer userId,
+                                                                        HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
+        return requestService.getRequestsByInitiator(eventId, userId)
                 .stream()
-                .map(request -> toParticipationRequestDTO(request))
+                .map(req -> toParticipationRequestDTO(req))
                 .collect(Collectors.toList());
     }
 
     @PatchMapping("/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
-    public EventRequestStatusUpdateResult updateResult(@PathVariable Integer userId, @PathVariable Integer eventId, @RequestBody @Valid EventRequestStatusUpdateRequestDTO eventRequestStatusUpdateRequestDTO) {
-        return  requestService.updateRequestsStatus(eventId,userId,eventRequestStatusUpdateRequestDTO);
+    public EventRequestStatusUpdateResult updateResult(@PathVariable Integer userId, @PathVariable Integer eventId,
+                                                       @RequestBody @Valid EventRequestStatusUpdateRequestDTO dto,
+                                                       HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
+        return requestService.updateRequestsStatus(eventId, userId, dto);
     }
-
-
-
-
 
 
 }

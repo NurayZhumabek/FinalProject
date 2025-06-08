@@ -7,6 +7,8 @@ import com.practice.discoveryEvents.categories.CategoryService;
 import com.practice.discoveryEvents.categories.NewCategoryDTO;
 import com.practice.discoveryEvents.compilations.*;
 import com.practice.discoveryEvents.events.*;
+import com.practice.discoveryEvents.stats.StatsClient;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.modelmapper.ModelMapper;
@@ -28,22 +30,28 @@ public class AdminController {
     private final CompilationService compilationService;
     private final CategoryService categoryService;
     private final CompilationMapper compilationMapper;
+    private final StatsClient statsClient;
 
     public AdminController(UserService userService, ModelMapper modelMapper, EventService eventService,
-                           CompilationService compilationService, CategoryService categoryService, CompilationMapper compilationMapper) {
+                           CompilationService compilationService, CategoryService categoryService, CompilationMapper compilationMapper, StatsClient statsClient) {
         this.userService = userService;
         this.modelMapper = modelMapper;
         this.eventService = eventService;
         this.compilationService = compilationService;
         this.categoryService = categoryService;
         this.compilationMapper = compilationMapper;
+        this.statsClient = statsClient;
     }
 
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     public List<UserDTO> getUsers(@RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
                                   @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size,
-                                  @RequestParam(value = "ids", required = false) List<Integer> ids) {
+                                  @RequestParam(value = "ids", required = false) List<Integer> ids,
+                                  HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
+
         return userService.getAllUsers(ids, from, size)
                 .stream()
                 .map(user -> modelMapper.map(user, UserDTO.class))
@@ -52,7 +60,10 @@ public class AdminController {
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDTO createUser(@RequestBody @Valid NewUserRequest userDTO) {
+    public UserDTO createUser(@RequestBody @Valid NewUserRequest userDTO,
+                              HttpServletRequest request) {
+
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
 
         User user = modelMapper.map(userDTO, User.class);
         User createdUser = userService.createUser(user);
@@ -62,13 +73,18 @@ public class AdminController {
 
     @DeleteMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable("userId") int userId) {
+    public void deleteUser(@PathVariable("userId") int userId,
+                           HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         userService.deleteUser(userId);
     }
 
 
     @GetMapping("/events")
-    public List<EventFullDTO> getEvents(@ModelAttribute EventAdminFilterParams filterParams) {
+    public List<EventFullDTO> getEvents(@ModelAttribute EventAdminFilterParams filterParams,
+                                        HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
 
         return eventService.searchEventsByAdmin(filterParams)
                 .stream()
@@ -79,7 +95,11 @@ public class AdminController {
 
     @PatchMapping("/events/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDTO updateEvent(@PathVariable("eventId") int eventId, @RequestBody @Valid UpdateEventAdminRequestDTO eventDTO) {
+    public EventFullDTO updateEvent(@PathVariable("eventId") int eventId, @RequestBody @Valid UpdateEventAdminRequestDTO eventDTO,
+                                    HttpServletRequest request) {
+
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         Event updatedEvent = eventService.updateEventByAdmin(eventId, eventDTO);
         return modelMapper.map(updatedEvent, EventFullDTO.class);
     }
@@ -87,7 +107,10 @@ public class AdminController {
 
     @PostMapping("/compilations")
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDTO createCompilation(@RequestBody @Valid NewCompilationDTO compilationDTO) {
+    public CompilationDTO createCompilation(@RequestBody @Valid NewCompilationDTO compilationDTO,
+                                            HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
 
         Compilation createdCompilation = compilationService.createCompilation(compilationDTO);
         return modelMapper.map(createdCompilation, CompilationDTO.class);
@@ -96,7 +119,10 @@ public class AdminController {
 
     @DeleteMapping("/compilations/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCompilation(@PathVariable("compId") int compId) {
+    public void deleteCompilation(@PathVariable("compId") int compId,
+                                  HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         compilationService.deleteCompilationById(compId);
     }
 
@@ -104,7 +130,9 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public CompilationDTO updateCompilation(
             @PathVariable("compId") int compId,
-            @RequestBody @Valid UpdateCompilationRequestDTO compDTO) {
+            @RequestBody @Valid UpdateCompilationRequestDTO compDTO,
+            HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
 
         Compilation updatedCompilation = compilationService.updateCompilationById(compId, compDTO);
         return compilationMapper.toCompilationDTO(updatedCompilation);
@@ -113,7 +141,10 @@ public class AdminController {
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDTO createCategory(@RequestBody @Valid NewCategoryDTO categoryDTO) {
+    public CategoryDTO createCategory(@RequestBody @Valid NewCategoryDTO categoryDTO,
+                                      HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         Category category = modelMapper.map(categoryDTO, Category.class);
         Category created = categoryService.createCategory(category);
         return modelMapper.map(created, CategoryDTO.class);
@@ -121,14 +152,20 @@ public class AdminController {
 
     @DeleteMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable("catId") Integer catId) {
+    public void deleteCategory(@PathVariable("catId") Integer catId,
+                               HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         categoryService.deleteCategory(catId);
     }
 
     @PatchMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDTO updateCategory(@PathVariable("catId") Integer catId,
-                                      @RequestBody @Valid NewCategoryDTO categoryDTO) {
+                                      @RequestBody @Valid NewCategoryDTO categoryDTO,
+                                      HttpServletRequest request) {
+        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+
         Category category = modelMapper.map(categoryDTO, Category.class);
         Category updated = categoryService.updateCategory(catId, category);
         return modelMapper.map(updated, CategoryDTO.class);

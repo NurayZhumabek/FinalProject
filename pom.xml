@@ -23,6 +23,7 @@
     </developers>
     <modules>
         <module>discoveryEvents-service</module>
+        <module>stats-service-api</module>
     </modules>
     <scm>
         <connection/>
