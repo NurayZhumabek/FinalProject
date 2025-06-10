@@ -15,7 +15,7 @@ public interface EventService {
 
     Event getPublicEventById(Integer eventId);
 
-    Event getEventById(Integer eventId);
+    Event getEventById(Integer eventId,String ip,String uri);
 
     List<Event> getPublishedEvents(EventFilterParams eventFilter);
 
@@ -23,5 +23,4 @@ public interface EventService {
 
     Event updateEventByAdmin(Integer eventId, UpdateEventAdminRequestDTO updated);
     Event findEventById(Integer eventId);
-
 }

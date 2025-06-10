@@ -1,9 +1,7 @@
 package com.practice.discoveryEvents.stats;
 
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,5 +30,17 @@ public class StatsClient {
         HttpEntity<EndpointHit> request = new HttpEntity<>(hit, headers);
 
         restTemplate.postForEntity("http://localhost:9090/hit", request, Void.class);
+    }
+
+    public Boolean getHit(String ip, String uri) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:9090/hit?ip=" + ip + "&uri=" + uri;
+
+
+        ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
+
+        return response.getBody();
+
     }
 }

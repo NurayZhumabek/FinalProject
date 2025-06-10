@@ -2,6 +2,7 @@ package com.practice.discoveryEvents.events;
 
 import com.practice.discoveryEvents.categories.Category;
 import com.practice.discoveryEvents.categories.CategoryService;
+import com.practice.discoveryEvents.stats.StatsClient;
 import com.practice.discoveryEvents.users.User;
 import com.practice.discoveryEvents.users.UserService;
 import com.practice.discoveryEvents.util.*;
@@ -20,11 +21,13 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserService userService;
     private final CategoryService categoryService;
+    private final StatsClient statsClient;
 
-    public EventServiceImpl(EventRepository eventRepository, UserService userService, CategoryService categoryService) {
+    public EventServiceImpl(EventRepository eventRepository, UserService userService, CategoryService categoryService, StatsClient statsClient) {
         this.eventRepository = eventRepository;
         this.userService = userService;
         this.categoryService = categoryService;
+        this.statsClient = statsClient;
     }
 
     @Override
@@ -147,15 +150,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event getEventById(Integer eventId) {
+    public Event getEventById(Integer eventId, String ip,String uri) {
         Event event = eventRepository.findEventByIdAndState(eventId, State.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event is not published"));
 
-        if (event.getViews() == 0) {
+
+        if (!statsClient.getHit(ip, uri)) {
             event.setViews(event.getViews() + 1);
             eventRepository.save(event);
         }
-        eventRepository.save(event);
 
         return event;
     }

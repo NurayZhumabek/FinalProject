@@ -42,4 +42,9 @@ public class HitController {
 
         return hitService.getStats(start, end, uris, unique);
     }
+
+    @GetMapping("/hit")
+    public Boolean getHit(@RequestParam String ip, @RequestParam String uri) {
+        return hitService.existsByIpAndUri(ip, uri);
+    }
 }

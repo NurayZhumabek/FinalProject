@@ -44,7 +44,7 @@ public class PublicEventController {
                                             HttpServletRequest request) {
         statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
 
-        return mapper.map(eventService.getEventById(id), EventFullDTO.class);
+        return mapper.map(eventService.getEventById(id,request.getRemoteAddr(),request.getRequestURI()), EventFullDTO.class);
     }
 
 

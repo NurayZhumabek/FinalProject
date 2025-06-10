@@ -30,4 +30,11 @@ public class HitServiceImpl implements HitService {
                     : hitRepository.getByUris(start, end, uris);
         }
     }
+
+    @Override
+    public Boolean existsByIpAndUri(String ip, String uri) {
+
+        return hitRepository.findByIpAndUri(ip, uri) != null;
+
+    }
 }

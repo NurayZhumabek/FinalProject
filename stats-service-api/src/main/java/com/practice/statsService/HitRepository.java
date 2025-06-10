@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
-public interface HitRepository extends JpaRepository<Hit, Integer> {
+public interface  HitRepository extends JpaRepository<Hit, Integer> {
     @Query("SELECT new com.practice.statsService.ViewStats (h.app, h.uri, COUNT(h.ip)) " +
             "FROM Hit h " +
             "WHERE h.timestamp BETWEEN :start AND :end " +
@@ -35,4 +36,7 @@ public interface HitRepository extends JpaRepository<Hit, Integer> {
             "GROUP BY h.app, h.uri " +
             "ORDER BY COUNT(DISTINCT h.ip) DESC")
     List<ViewStats> getByUrisUnique(LocalDateTime start, LocalDateTime end, List<String> uris);
+
+
+    Optional<Hit> findByIpAndUri(String ip, String uri);
 }

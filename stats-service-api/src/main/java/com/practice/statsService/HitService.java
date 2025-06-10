@@ -8,4 +8,7 @@ public interface HitService {
      void save(Hit hit);
 
      List<ViewStats> getStats(LocalDateTime start,LocalDateTime end,List<String> uris,boolean unique);
+
+     Boolean existsByIpAndUri(String ip,String uri);
+
 }
