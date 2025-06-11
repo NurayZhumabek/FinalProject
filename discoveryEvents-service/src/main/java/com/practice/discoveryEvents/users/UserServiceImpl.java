@@ -5,6 +5,7 @@ import com.practice.discoveryEvents.util.AlreadyExistsException;
 import com.practice.discoveryEvents.util.NotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -38,14 +39,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers(List<Integer> ids, int from, int size) {
 
-        Pageable pageable = PageRequest.of((from/size), size);
+        Pageable pageable = PageRequest.of((from / size), size, Sort.by(Sort.Direction.ASC, "id"));
 
         if (ids == null || ids.isEmpty()) {
             return userRepository.findAll(pageable).getContent();
         }
 
         Specification<User> spec = UserSpecifications.byIds(ids);
-        return userRepository.findAll(spec,pageable).getContent();
+        return userRepository.findAll(spec, pageable).getContent();
     }
 
     @Override

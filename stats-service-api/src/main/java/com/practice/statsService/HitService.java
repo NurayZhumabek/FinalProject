@@ -9,6 +9,6 @@ public interface HitService {
 
      List<ViewStats> getStats(LocalDateTime start,LocalDateTime end,List<String> uris,boolean unique);
 
-     Boolean existsByIpAndUri(String ip,String uri);
+     boolean existsByIpAndUri(String ip,String uri);
 
 }

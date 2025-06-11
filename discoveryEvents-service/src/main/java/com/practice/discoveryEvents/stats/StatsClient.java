@@ -7,6 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Service
 public class StatsClient {
@@ -29,14 +30,12 @@ public class StatsClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<EndpointHit> request = new HttpEntity<>(hit, headers);
 
-        restTemplate.postForEntity("http://localhost:9090/hit", request, Void.class);
+        restTemplate.postForEntity("http://stats-service-server:9090/hit", request, Void.class);
     }
 
-    public Boolean getHit(String ip, String uri) {
+    public boolean getHit(String ip, String uri) {
 
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:9090/hit?ip=" + ip + "&uri=" + uri;
-
+        String url = "http://stats-service-server:9090/hit?ip=" + ip + "&uri=" + uri;
 
         ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
 

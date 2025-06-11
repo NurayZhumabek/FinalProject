@@ -18,4 +18,5 @@ public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpeci
     Boolean existsByCategoryId(int categoryId);
 
 
+
 }

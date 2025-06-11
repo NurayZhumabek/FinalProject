@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class HitController {
@@ -44,7 +45,8 @@ public class HitController {
     }
 
     @GetMapping("/hit")
-    public Boolean getHit(@RequestParam String ip, @RequestParam String uri) {
-        return hitService.existsByIpAndUri(ip, uri);
+    public boolean getHit(@RequestParam String ip, @RequestParam String uri) {
+
+        return Optional.ofNullable(hitService.existsByIpAndUri(ip, uri)).orElse(false);
     }
 }

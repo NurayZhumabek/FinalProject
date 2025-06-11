@@ -32,9 +32,9 @@ public class HitServiceImpl implements HitService {
     }
 
     @Override
-    public Boolean existsByIpAndUri(String ip, String uri) {
+    public boolean existsByIpAndUri(String ip, String uri) {
 
-        return hitRepository.findByIpAndUri(ip, uri) != null;
+        return hitRepository.findByIpAndUri(ip, uri).isPresent();
 
     }
 }

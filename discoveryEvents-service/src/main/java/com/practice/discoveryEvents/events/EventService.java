@@ -15,7 +15,7 @@ public interface EventService {
 
     Event getPublicEventById(Integer eventId);
 
-    Event getEventById(Integer eventId,String ip,String uri);
+    Event getEventById(Integer eventId,boolean  isExists);
 
     List<Event> getPublishedEvents(EventFilterParams eventFilter);
 

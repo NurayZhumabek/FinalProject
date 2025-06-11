@@ -1,6 +1,7 @@
 package com.practice.discoveryEvents.events;
 
 
+import com.practice.discoveryEvents.stats.EndpointHit;
 import com.practice.discoveryEvents.stats.StatsClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -19,11 +20,13 @@ public class PublicEventController {
     private final EventService eventService;
     private final ModelMapper mapper;
     private final StatsClient statsClient;
+    private final ModelMapper modelMapper;
 
-    public PublicEventController(EventService eventService, ModelMapper mapper, StatsClient statsClient) {
+    public PublicEventController(EventService eventService, ModelMapper mapper, StatsClient statsClient, ModelMapper modelMapper) {
         this.eventService = eventService;
         this.mapper = mapper;
         this.statsClient = statsClient;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping
@@ -40,12 +43,19 @@ public class PublicEventController {
 
 
     @GetMapping("/{id}")
-    public EventFullDTO getPublicEventsById(@PathVariable int id,
-                                            HttpServletRequest request) {
-        statsClient.sendHit(request.getRemoteAddr(), request.getRequestURI());
+    public EventFullDTO getPublicEventsById(@PathVariable int id, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        String uri = request.getRequestURI();
 
-        return mapper.map(eventService.getEventById(id,request.getRemoteAddr(),request.getRequestURI()), EventFullDTO.class);
+        boolean isExists = statsClient.getHit(ip, uri);
+
+        Event event = eventService.getEventById(id, isExists);
+
+        if (!isExists) {
+            statsClient.sendHit(ip, uri);
+        }
+
+        return modelMapper.map(event, EventFullDTO.class);
     }
-
 
 }

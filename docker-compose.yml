@@ -13,6 +13,8 @@ services:
       - DB_PASSWORD=123
     depends_on:
       - discovery_events-db
+      - stats-service-server
+
 
 
 

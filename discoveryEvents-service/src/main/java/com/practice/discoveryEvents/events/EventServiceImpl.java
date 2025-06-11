@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,13 +22,11 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserService userService;
     private final CategoryService categoryService;
-    private final StatsClient statsClient;
 
-    public EventServiceImpl(EventRepository eventRepository, UserService userService, CategoryService categoryService, StatsClient statsClient) {
+    public EventServiceImpl(EventRepository eventRepository, UserService userService, CategoryService categoryService) {
         this.eventRepository = eventRepository;
         this.userService = userService;
         this.categoryService = categoryService;
-        this.statsClient = statsClient;
     }
 
     @Override
@@ -150,16 +149,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event getEventById(Integer eventId, String ip,String uri) {
+    @Transactional
+    public Event getEventById(Integer eventId, boolean isExists) {
         Event event = eventRepository.findEventByIdAndState(eventId, State.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event is not published"));
 
-
-        if (!statsClient.getHit(ip, uri)) {
+        if (!isExists) {
             event.setViews(event.getViews() + 1);
             eventRepository.save(event);
         }
-
         return event;
     }
 
