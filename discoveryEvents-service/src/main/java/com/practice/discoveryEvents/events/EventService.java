@@ -23,4 +23,6 @@ public interface EventService {
 
     Event updateEventByAdmin(Integer eventId, UpdateEventAdminRequestDTO updated);
     Event findEventById(Integer eventId);
+
+    List<Event> getActualPublishedEvents(List<Integer> userIds,Integer from, Integer size);
 }

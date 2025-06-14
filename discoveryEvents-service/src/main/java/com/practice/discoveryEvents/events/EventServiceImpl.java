@@ -304,4 +304,16 @@ public class EventServiceImpl implements EventService {
         return spec;
     }
 
+    @Override
+    public List<Event> getActualPublishedEvents(List<Integer> userIds, Integer from, Integer size) {
+
+        Specification<Event> spec = Specification.where(null);
+
+        spec.and(EventSpecifications.hasUserIds(userIds));
+        spec.and(EventSpecifications.isAfterStart(LocalDateTime.now()));
+        spec.and(EventSpecifications.hasState(State.PUBLISHED));
+
+        Pageable pageable = PageRequest.of((from/size), size);
+        return eventRepository.findAll(spec, pageable).getContent() ;
+    }
 }
